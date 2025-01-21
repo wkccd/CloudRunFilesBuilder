@@ -64,9 +64,9 @@ jobs:
           
           # 获取文件列表并下载符合条件的文件
           curl -s "$TARGET_URL" | grep -oP "$FILE_PREFIX.*?\.ipk" | while read -r file; do
-              echo "Downloading $file..."
-              curl -O "$TARGET_URL$file" "AdGuardHome_aarch64"
-              curl -O "$TARGET_URL$file" "AdGuardHome_x86_64"
+              echo "Downloading $file to AdGuardHome_aarch64 and AdGuardHome_x86_64..."
+              curl -o "AdGuardHome_aarch64/$file" "$TARGET_URL$file"
+              curl -o "AdGuardHome_x86_64/$file" "$TARGET_URL$file"
           done
 
           
