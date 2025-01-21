@@ -1,0 +1,127 @@
+#=================================================
+# https://github.com/wukongdaily/RunFilesBuilder
+# Description: Build RunFiles using GitHub Actions
+# Lisence: MIT
+# Author: wukongdaily
+# Blog: wkdaily.cpolar.top
+#=================================================
+
+name: Make AdGuardHome run files
+
+on:
+  workflow_dispatch:
+      inputs:
+        package_version:
+          description: '这里是包版本'
+          required: false
+          default: 'packages-24.10'  
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+    
+      - name: Create directories for x86_64 and a53 and set PACKAGE_VERSION
+        run: |
+          package_version="${{ github.event.inputs.package_version }}"
+          if [ -z "$package_version" ]; then
+            package_version="packages-24.10"
+          fi
+          echo "PACKAGE_VERSION=$package_version" >> $GITHUB_ENV
+      
+      - name: Fetch latest release tag from AdGuardHome
+        id: fetch_latest_tag
+        run: |
+          latest_tag=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r '.tag_name')
+          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
+          # https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.107.55/AdGuardHome_linux_arm64.tar.gz
+
+      - name: Clone makeself repository
+        run: git clone https://github.com/megastep/makeself.git
+
+      - name: Download latest AdGuardHome files
+        run: |
+          # 下载 ARM64 平台的 AdGuardHome 文件
+          curl -LO "https://github.com/AdguardTeam/AdGuardHome/releases/download/${{ env.LATEST_TAG }}/AdGuardHome_linux_arm64.tar.gz"
+          tar --one-top-level=AdGuardHome_aarch64 -xvzf AdGuardHome_linux_arm64.tar.gz
+          echo "AdGuardHome_aarch64 List"
+          ls AdGuardHome_aarch64
+          # 下载 x86-64 平台的 AdGuardHome 文件
+          curl -LO "https://github.com/AdguardTeam/AdGuardHome/releases/download/${{ env.LATEST_TAG }}/AdGuardHome_linux_amd64.tar.gz"
+          tar --one-top-level=AdGuardHome_x86_64 -xvzf AdGuardHome_linux_amd64.tar.gz
+          echo "AdGuardHome_x86_64 List"
+          ls AdGuardHome_x86_64
+
+
+      - name: Download luci-app-adguardhome IPK files
+        run: |
+          # 定义目标目录
+          TARGET_URL="https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/kiddin9/"
+          FILE_PREFIX="luci-app-adguardhome"
+          
+          # 获取文件列表并下载符合条件的文件
+          curl -s "$TARGET_URL" | grep -oP "$FILE_PREFIX.*?\.ipk" | while read -r file; do
+              echo "Downloading $file..."
+              curl -O "$TARGET_URL$file" "AdGuardHome_aarch64"
+              curl -O "$TARGET_URL$file" "AdGuardHome_x86_64"
+          done
+
+          
+
+      - name: Create install.sh scripts
+        run: |
+          cat <<EOF > AdGuardHome_x86_64/install.sh
+          #!/bin/sh
+          cp AdGuardHome /usr/bin/AdGuardHome
+          chmod +x /usr/bin/AdGuardHome
+          opkg update
+          if [ $? -ne 0 ]; then
+              echo "update failed。"
+              exit 1
+          fi
+          opkg install *.ipk
+          EOF
+          chmod +x AdGuardHome_x86_64/install.sh
+          cp AdGuardHome_x86_64/install.sh AdGuardHome_aarch64/install.sh
+          
+
+      - name: Move AdGuardHome directories to makeself
+        run: |
+          mv AdGuardHome_x86_64 makeself/
+          mv AdGuardHome_aarch64 makeself/
+
+      - name: Create self-extracting packages
+        run: |
+          cd makeself
+          ./makeself.sh AdGuardHome_x86_64/ AdGuardHome_${{ env.LATEST_TAG }}_x86_64.run "by wukongdaily github action" ./install.sh
+          ./makeself.sh AdGuardHome_aarch64/ AdGuardHome_${{ env.LATEST_TAG }}_aarch64.run "by wukongdaily github action" ./install.sh
+          
+
+      - name: Check file sizes
+        run: |
+          ls -lh makeself/AdGuardHome_*.run
+
+      - name: Fetch latest release details
+        id: fetch_release_details
+        run: |
+          extra_content="![Github](https://img.shields.io/badge/AdGuardHome.run-123456?logo=github&logoColor=fff&labelColor=pink&style=for-the-badge) [![Github](https://img.shields.io/badge/国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.top/archives/1) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/wukongdaily/RunFilesBuilder/${{ env.LATEST_TAG }}/total?style=for-the-badge&labelColor=black&color=%2325c2a0)"
+          sed -i "1i$extra_content" "${{ github.workspace }}/info.md"
+
+      - name: Print release notes
+        run: |
+          cat ${{ github.workspace }}/info.md
+
+
+      - name: Upload run files as release assets
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: AdGuardHome_${{ env.LATEST_TAG }}
+          name: "AdGuardHome-${{ env.LATEST_TAG }}"
+          files: makeself/AdGuardHome*.run
+          body_path: ${{ github.workspace }}/info.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
