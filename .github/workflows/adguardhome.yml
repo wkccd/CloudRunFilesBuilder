@@ -44,6 +44,11 @@ jobs:
 
       - name: Download latest AdGuardHome files
         run: |
+          curl -LO "https://github.com/AdguardTeam/AdGuardHome/releases/download/${{ env.LATEST_TAG }}/AdGuardHome_linux_armv7.tar.gz"
+          tar --one-top-level=AdGuardHome_aarch32 -xvzf AdGuardHome_linux_armv7.tar.gz
+          echo "AdGuardHome_aarch32 List"
+          ls AdGuardHome_aarch32
+          
           curl -LO "https://github.com/AdguardTeam/AdGuardHome/releases/download/${{ env.LATEST_TAG }}/AdGuardHome_linux_arm64.tar.gz"
           tar --one-top-level=AdGuardHome_aarch64 -xvzf AdGuardHome_linux_arm64.tar.gz
           echo "AdGuardHome_aarch64 List"
@@ -60,7 +65,7 @@ jobs:
           FILE_PREFIX="luci-app-adguardhome"
           
           curl -s "$TARGET_URL" | grep -oP "$FILE_PREFIX.*?\.ipk" | while read -r file; do
-              echo "Downloading $file to AdGuardHome_aarch64 and AdGuardHome_x86_64..."
+              curl -o "AdGuardHome_aarch32/$file" "$TARGET_URL$file"
               curl -o "AdGuardHome_aarch64/$file" "$TARGET_URL$file"
               curl -o "AdGuardHome_x86_64/$file" "$TARGET_URL$file"
           done
@@ -80,17 +85,20 @@ jobs:
           EOF
           chmod +x AdGuardHome_x86_64/install.sh
           cp AdGuardHome_x86_64/install.sh AdGuardHome_aarch64/install.sh
+          cp AdGuardHome_x86_64/install.sh AdGuardHome_aarch32/install.sh
           
       - name: Move AdGuardHome directories to makeself
         run: |
           mv AdGuardHome_x86_64 makeself/
           mv AdGuardHome_aarch64 makeself/
+          mv AdGuardHome_aarch32 makeself/
 
       - name: Create self-extracting packages
         run: |
           cd makeself
           ./makeself.sh AdGuardHome_x86_64/ AdGuardHome_${{ env.LATEST_TAG }}_x86_64.run "by wukongdaily github action" ./install.sh
           ./makeself.sh AdGuardHome_aarch64/ AdGuardHome_${{ env.LATEST_TAG }}_aarch64.run "by wukongdaily github action" ./install.sh
+          ./makeself.sh AdGuardHome_aarch32/ AdGuardHome_${{ env.LATEST_TAG }}_aarch32.run "by wukongdaily github action" ./install.sh
           
       - name: Check file sizes
         run: |
