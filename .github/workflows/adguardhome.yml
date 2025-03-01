@@ -62,45 +62,45 @@ jobs:
 
 
       - name: Download luci-app-adguardhome IPK files
-         run: | 
-        # 应用包使用kiddin9路径
-        APP_ARCHS=(
-        "AdGuardHome_aarch32=https://dl.openwrt.ai/$PACKAGE_VERSION/arm_cortex-a7/kiddin9/"
-        "AdGuardHome_aarch64=https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/kiddin9/"
-        "AdGuardHome_x86_64=https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/kiddin9/")
+        run: |
+          # 应用包使用kiddin9路径
+          APP_ARCHS=(
+           "AdGuardHome_aarch32=https://dl.openwrt.ai/$PACKAGE_VERSION/arm_cortex-a7/kiddin9/"
+           "AdGuardHome_aarch64=https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/kiddin9/"
+           "AdGuardHome_x86_64=https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/kiddin9/")
 
-        # 核心依赖包使用packages路径
-        CORE_ARCHS=(
-        "AdGuardHome_aarch32=https://dl.openwrt.ai/$PACKAGE_VERSION/arm_cortex-a7/packages/"
-        "AdGuardHome_aarch64=https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/packages/"
-        "AdGuardHome_x86_64=https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/packages/")
+          # 核心依赖包使用packages路径
+          CORE_ARCHS=(
+          "AdGuardHome_aarch32=https://dl.openwrt.ai/$PACKAGE_VERSION/arm_cortex-a7/packages/"
+          "AdGuardHome_aarch64=https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/packages/"
+          "AdGuardHome_x86_64=https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/packages/")
 
-        # 下载应用包（luci-app-adguardhome）
-        for ARCH_MAPPING in "${APP_ARCHS[@]}"; do
-            ARCH=$(echo "$ARCH_MAPPING" | cut -d= -f1)
-            TARGET_URL=$(echo "$ARCH_MAPPING" | cut -d= -f2)
+          # 下载应用包（luci-app-adguardhome）
+          for ARCH_MAPPING in "${APP_ARCHS[@]}"; do
+              ARCH=$(echo "$ARCH_MAPPING" | cut -d= -f1)
+              TARGET_URL=$(echo "$ARCH_MAPPING" | cut -d= -f2)
         
-            echo "正在下载应用包 [$ARCH]"
-            curl -s "$TARGET_URL" | grep -oP "luci-app-adguardhome.*?\.ipk" | while read -r file; do
-                new_file_name=$(echo "$file" | sed 's/~/_/g')
-                curl -o "$ARCH/$new_file_name" "$TARGET_URL$file"
-                ls "$ARCH/$new_file_name"
-            done
-        done
+              echo "正在下载应用包 [$ARCH]"
+              curl -s "$TARGET_URL" | grep -oP "luci-app-adguardhome.*?\.ipk" | while read -r file; do
+                  new_file_name=$(echo "$file" | sed 's/~/_/g')
+                  curl -o "$ARCH/$new_file_name" "$TARGET_URL$file"
+                  ls "$ARCH/$new_file_name"
+              done
+           done
 
-        # 下载核心包（adguardhome）
-        for ARCH_MAPPING in "${CORE_ARCHS[@]}"; do
-            ARCH=$(echo "$ARCH_MAPPING" | cut -d= -f1)
-            TARGET_URL=$(echo "$ARCH_MAPPING" | cut -d= -f2)
+          # 下载核心包（adguardhome）
+          for ARCH_MAPPING in "${CORE_ARCHS[@]}"; do
+              ARCH=$(echo "$ARCH_MAPPING" | cut -d= -f1)
+              TARGET_URL=$(echo "$ARCH_MAPPING" | cut -d= -f2)
         
-            echo "正在下载核心包 [$ARCH]"
-            mkdir -p "$ARCH/depends"
-            curl -s "$TARGET_URL" | grep -oP "adguardhome.*?\.ipk" | grep -v "luci-app" | while read -r file; do
-                new_file_name=$(echo "$file" | sed 's/~/_/g')
-                curl -o "$ARCH/depends/$new_file_name" "$TARGET_URL$file"
-                ls "$ARCH/depends/$new_file_name"
-            done
-        done
+              echo "正在下载核心包 [$ARCH]"
+              mkdir -p "$ARCH/depends"
+              curl -s "$TARGET_URL" | grep -oP "adguardhome.*?\.ipk" | grep -v "luci-app" | while read -r file; do
+                  new_file_name=$(echo "$file" | sed 's/~/_/g')
+                  curl -o "$ARCH/depends/$new_file_name" "$TARGET_URL$file"
+                  ls "$ARCH/depends/$new_file_name"
+              done
+          done
         
       - name: Create install.sh scripts
         run: |
