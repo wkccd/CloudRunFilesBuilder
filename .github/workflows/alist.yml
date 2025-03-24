@@ -33,20 +33,28 @@ jobs:
 
       - name: Download latest alist files
         run: |
-          curl -LO $(curl -s https://api.github.com/repos/sbwml/luci-app-alist/releases/latest | grep -oP '"browser_download_url":\s*".*openwrt-22.03-aarch64_cortex-a53.tar.gz"' | cut -d '"' -f 4)
-          curl -LO $(curl -s https://api.github.com/repos/sbwml/luci-app-alist/releases/latest | grep -oP '"browser_download_url":\s*".*openwrt-22.03-x86_64.tar.gz"' | cut -d '"' -f 4)
-          tar --one-top-level=openwrt-22.03-aarch64_cortex-a53 -xvzf openwrt-22.03-aarch64_cortex-a53.tar.gz
-          tar --one-top-level=openwrt-22.03-x86_64 -xvzf openwrt-22.03-x86_64.tar.gz
-          echo "打印文件夹内容 openwrt-22.03-aarch64_cortex-a53"
-          ls openwrt-22.03-aarch64_cortex-a53
-          echo "打印文件夹内容 openwrt-22.03-x86_64"
-          ls openwrt-22.03-x86_64
+          # 创建两个独立目录
+          mkdir -p alist_x86_64 alist_aarch64_cortex-a53
+      
+          # 下载 x86_64 压缩包并解压到指定目录
+          x86_url=$(curl -s https://api.github.com/repos/sbwml/luci-app-alist/releases/latest | grep -oP '"browser_download_url":\s*".*openwrt-22.03-x86_64.tar.gz"' | cut -d '"' -f4)
+          curl -LO $x86_url
+          tar --one-top-level=alist_x86_64/openwrt-22.03-x86_64 -xvzf openwrt-22.03-x86_64.tar.gz
+          rm openwrt-22.03-x86_64.tar.gz  # 可选项：删除压缩包
+      
+          # 下载 aarch64 压缩包并解压到指定目录
+          aarch64_url=$(curl -s https://api.github.com/repos/sbwml/luci-app-alist/releases/latest | grep -oP '"browser_download_url":\s*".*openwrt-22.03-aarch64_cortex-a53.tar.gz"' | cut -d '"' -f4)
+          curl -LO $aarch64_url
+          tar --one-top-level=alist_aarch64_cortex-a53/openwrt-22.03-aarch64_cortex-a53 -xvzf openwrt-22.03-aarch64_cortex-a53.tar.gz
+          rm openwrt-22.03-aarch64_cortex-a53.tar.gz  # 可选项：删除压缩包
+  
 
-      - name: Organize files for aarch64_cortex-a53&x86_64
+      - name: List files for aarch64_cortex-a53&x86_64
         run: |
-          mkdir alist_x86_64 alist_aarch64_cortex-a53
-          cp openwrt-22.03-x86_64/*.ipk alist_x86_64/
-          cp openwrt-22.03-aarch64_cortex-a53/*.ipk alist_aarch64_cortex-a53/
+          echo "打印目录 alist_x86_64"
+          ls alist_x86_64
+          echo "打印目录 alist_aarch64_cortex-a53"
+          ls alist_aarch64_cortex-a53 
           
 
       - name: Create install.sh scripts
