@@ -53,8 +53,13 @@ jobs:
         run: |
           echo "打印目录 alist_x86_64/openwrt-22.03-x86_64/packages_ci"
           ls alist_x86_64/openwrt-22.03-x86_64/packages_ci
+          mv alist_x86_64/openwrt-22.03-x86_64/packages_ci/*.ipk alist_x86_64
+          rm -rf alist_x86_64/openwrt-22.03-x86_64
+
           echo "打印目录 alist_aarch64_cortex-a53/openwrt-22.03-aarch64_cortex-a53/packages_ci"
           ls alist_aarch64_cortex-a53/openwrt-22.03-aarch64_cortex-a53/packages_ci 
+          mv alist_aarch64_cortex-a53/openwrt-22.03-aarch64_cortex-a53/packages_ci/*.ipk alist_aarch64_cortex-a53
+          rm -rf alist_aarch64_cortex-a53/openwrt-22.03-aarch64_cortex-a53
           
 
       - name: Create install.sh scripts
