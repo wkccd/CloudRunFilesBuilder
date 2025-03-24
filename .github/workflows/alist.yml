@@ -51,10 +51,10 @@ jobs:
 
       - name: List files for aarch64_cortex-a53&x86_64
         run: |
-          echo "打印目录 alist_x86_64"
-          ls alist_x86_64
-          echo "打印目录 alist_aarch64_cortex-a53"
-          ls alist_aarch64_cortex-a53 
+          echo "打印目录 alist_x86_64/openwrt-22.03-x86_64"
+          ls alist_x86_64/openwrt-22.03-x86_64
+          echo "打印目录 alist_aarch64_cortex-a53/openwrt-22.03-x86_64"
+          ls alist_aarch64_cortex-a53/openwrt-22.03-x86_64 
           
 
       - name: Create install.sh scripts
