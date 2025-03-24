@@ -37,6 +37,10 @@ jobs:
           curl -LO $(curl -s https://api.github.com/repos/sbwml/luci-app-alist/releases/latest | grep -oP '"browser_download_url":\s*".*openwrt-22.03-x86_64.tar.gz"' | cut -d '"' -f 4)
           tar --one-top-level=openwrt-22.03-aarch64_cortex-a53 -xvzf openwrt-22.03-aarch64_cortex-a53.tar.gz
           tar --one-top-level=openwrt-22.03-x86_64 -xvzf openwrt-22.03-x86_64.tar.gz
+          echo "打印文件夹内容 openwrt-22.03-aarch64_cortex-a53"
+          ls openwrt-22.03-aarch64_cortex-a53
+          echo "打印文件夹内容 openwrt-22.03-x86_64"
+          ls openwrt-22.03-x86_64
 
       - name: Organize files for aarch64_cortex-a53&x86_64
         run: |
