@@ -33,7 +33,7 @@ jobs:
           mkdir -p downloads
           cd downloads
           curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*passwall_packages_ipk_x86_64.zip"' | cut -d '"' -f 4)
-          curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*passwall_packages_ipk_aarch64_cortex-a53.zip"' | cut -d '"' -f 4)
+          curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*passwall_packages_ipk_aarch64_generic.zip"' | cut -d '"' -f 4)
           curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*luci-19.07.*\.ipk"' | head -1 | cut -d '"' -f 4)
           curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*luci-19.07.*\.ipk"' | tail -1 | cut -d '"' -f 4)
       
