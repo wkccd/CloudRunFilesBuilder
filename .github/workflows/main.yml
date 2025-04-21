@@ -47,8 +47,8 @@ jobs:
       - name: Organize files for aarch64_cortex-a53
         run: |
           mkdir -p passwall_aarch64/depends passwall_aarch64/main
-          unzip downloads/passwall_packages_ipk_aarch64_cortex-a53.zip -d passwall_aarch64/depends
-          rm downloads/passwall_packages_ipk_aarch64_cortex-a53.zip
+          unzip downloads/passwall_packages_ipk_aarch64_generic.zip -d passwall_aarch64/depends
+          rm downloads/passwall_packages_ipk_aarch64_generic.zip
           cp downloads/luci-19.07*.ipk passwall_aarch64/main/
 
       - name: Create install.sh scripts
@@ -75,7 +75,7 @@ jobs:
         run: |
           cd makeself
           ./makeself.sh passwall_x86_64/ passwall_x86_64_${{ env.LATEST_TAG }}.run "by github action" ./install.sh
-          ./makeself.sh passwall_aarch64/ passwall_aarch64_a53_${{ env.LATEST_TAG }}.run "by github action" ./install.sh
+          ./makeself.sh passwall_aarch64/ passwall_aarch64_${{ env.LATEST_TAG }}.run "by github action" ./install.sh
 
       - name: Check file sizes
         run: |
