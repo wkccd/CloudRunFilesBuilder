@@ -28,8 +28,7 @@ jobs:
           git clone https://github.com/megastep/makeself.git
           echo "查看makeself目录"
           ls makeself
-          echo "正在调试，这里故意终止"
-          exit 1
+         
 
       - name: Create directories for x86_64 and a53 and set PACKAGE_VERSION
         run: |
@@ -182,8 +181,12 @@ jobs:
           ls -lh x86_64/depends/
           echo "List a53 depends ipk files"
           ls -lh a53/depends/
-          mv x86_64/depends/luci-app-ssr-plus*.ipk x86_64
-          mv a53/depends/luci-app-ssr-plus*.ipk a53
+          mv x86_64/depends/luci-app-ssr-plus*.ipk x86_64/
+          mv a53/depends/luci-app-ssr-plus*.ipk a53/
+          echo "查看a53目录"
+          ls a53/
+          echo "查看x86_64目录"
+          ls x86_64/
       
       - name: Create install.sh 
         run: |
@@ -201,7 +204,7 @@ jobs:
       - name: Create self-extracting archives
         run: |
             cd makeself
-            echo "List makeself files"
+            echo "查看 makeself files"
             ls makeself/
             ipk_file=$(ls x86_64/*.ipk)
             appversion=$(basename "$ipk_file" | grep -oP '\d+\.\d+\.\d+')
