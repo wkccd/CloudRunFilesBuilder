@@ -39,10 +39,11 @@ jobs:
           rel=$(grep -E '^PKG_RELEASE:=' Makefile | cut -d= -f2 | tr -d ' ')
 
           fullver="${ver}-r${rel}"
-          echo "ssrp_version=$fullver" >> $GITHUB_OUTPUT
+          echo "ssrp_version=$fullver" >> $GITHUB_ENV
+    
 
       - name: Show version
-        run: echo "版本号是：${{ steps.setver.outputs.ssrp_version }}"
+        run: echo "版本号是：${ssrp_version}"
 
       - name: Create directories for x86_64 and a53 and set PACKAGE_VERSION
         run: |
@@ -237,8 +238,8 @@ jobs:
       - name: Upload all .run files to GitHub Release
         uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: ${{ env.APP_VERSION }}
-          name: "SSRP-${{ env.APP_VERSION }}"
+          tag_name: ${ssrp_version}
+          name: "SSRP-${ssrp_version}"
           body: "![Github](https://img.shields.io/badge/SSRP.run-123456?logo=github&logoColor=fff&labelColor=blue&style=for-the-badge) [![Github](https://img.shields.io/badge/国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.top/archives/1) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/wukongdaily/RunFilesBuilder/${{ env.APP_VERSION }}/total?style=for-the-badge&labelColor=black&color=%2325c2a0)"
           files: makeself/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
