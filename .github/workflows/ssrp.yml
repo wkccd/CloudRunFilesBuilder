@@ -21,11 +21,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Clone makeself repo
         run: |
           git clone https://github.com/megastep/makeself.git
+          tree
+          echo "正在调试，这里故意终止"
+          exit 1
 
       - name: Create directories for x86_64 and a53 and set PACKAGE_VERSION
         run: |
