@@ -190,12 +190,13 @@ jobs:
       - name: Clone makeself repo
         run: |
           git clone https://github.com/megastep/makeself.git
-          echo "查看makeself目录"
+          echo "刚同步时查看makeself目录"
           ls makeself
       - name: Change Dir
         run: |
             mv -f x86_64/ makeself/
             mv -f a53/ makeself/
+            echo "移动后再查看makeself/的文件"
             ls -lah makeself/
             
       - name: Create self-extracting archives
@@ -204,15 +205,11 @@ jobs:
             ls
             echo "进入makeself目录"
             cd makeself
-            echo "查看 makeself files"
+            echo "查看进入后的 makeself files"
             ls 
-            ipk_file=$(ls x86_64/*.ipk)
-            appversion=$(basename "$ipk_file" | grep -oP '\d+\.\d+\.\d+')
-            echo "APP_VERSION=$appversion" >> $GITHUB_ENV
-            release_name=$(TZ="Asia/Shanghai" date +'%Y-%m-%d %H:%M Build')
-            echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
-            ./makeself.sh x86_64/ ssrp_x86_64_$appversion.run "by github action" ./install.sh
-            ./makeself.sh a53/ ssrp_aarch64_cortex-a53_$appversion.run "by github action" ./install.sh
+            echo "准备打包..."
+            makeself.sh x86_64/ ssrp_x86_64_$appversion.run "by github action" ./install.sh
+            makeself.sh a53/ ssrp_aarch64_cortex-a53_$appversion.run "by github action" ./install.sh
             
             
       
