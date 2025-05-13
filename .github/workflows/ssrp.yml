@@ -187,11 +187,18 @@ jobs:
             chmod +x x86_64/install.sh
             cp x86_64/install.sh a53/
   
-      - name: Create self-extracting archives
+      - name: Change Dir
         run: |
+            tree
+            ls -lah makeself/
             mv -f x86_64 makeself/
             mv -f a53 makeself/
+            
+      - name: Create self-extracting archives
+        run: |
             cd makeself
+            echo "List makeself files"
+            ls makeself/
             ipk_file=$(ls x86_64/*.ipk)
             appversion=$(basename "$ipk_file" | grep -oP '\d+\.\d+\.\d+')
             echo "APP_VERSION=$appversion" >> $GITHUB_ENV
