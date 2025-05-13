@@ -197,9 +197,9 @@ jobs:
       - name: Change Dir
         run: |
             tree
+            mv -f x86_64/ makeself/
+            mv -f a53/ makeself/
             ls -lah makeself/
-            mv -f x86_64 makeself/
-            mv -f a53 makeself/
             
       - name: Create self-extracting archives
         run: |
