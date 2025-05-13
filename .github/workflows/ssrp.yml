@@ -203,6 +203,10 @@ jobs:
             
       - name: Create self-extracting archives
         run: |
+            echo "查看当前目录"
+            ls
+            echo "故意终止"
+            exit 1
             cd makeself
             echo "查看 makeself files"
             ls makeself/
