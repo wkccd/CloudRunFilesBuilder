@@ -33,7 +33,7 @@ jobs:
           mkdir -p downloads
           cd downloads
           curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*passwall_packages_ipk_x86_64.zip"' | cut -d '"' -f 4)
-          curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*passwall_packages_ipk_aarch64_cortex-a53.zip"' | cut -d '"' -f 4)
+          curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*passwall_packages_ipk_arm_cortex-a7_neon-vfpv4.zip"' | cut -d '"' -f 4)
           curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*luci-19.07.*\.ipk"' | head -1 | cut -d '"' -f 4)
           curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | grep -oP '"browser_download_url":\s*".*luci-19.07.*\.ipk"' | tail -1 | cut -d '"' -f 4)
       
@@ -47,8 +47,8 @@ jobs:
       - name: Organize files for aarch64_cortex-a53
         run: |
           mkdir -p passwall_aarch64/depends passwall_aarch64/main
-          unzip downloads/passwall_packages_ipk_aarch64_cortex-a53.zip -d passwall_aarch64/depends
-          rm downloads/passwall_packages_ipk_aarch64_cortex-a53.zip
+          unzip downloads/passwall_packages_ipk_arm_cortex-a7_neon-vfpv4.zip -d passwall_aarch64/depends
+          rm downloads/passwall_packages_ipk_arm_cortex-a7_neon-vfpv4.zip
           cp downloads/luci-19.07*.ipk passwall_aarch64/main/
 
       - name: Create install.sh scripts
