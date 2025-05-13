@@ -17,11 +17,32 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 
+    runs-on: ubuntu-22.04
+    outputs:
+      ssrp_version: ${{ steps.setver.outputs.ssrp_version }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      
+      - name: Clone luci-app-ssr-plus
+        run: |
+          git clone --depth=1 https://github.com/kiddin9/kwrt-packages.git
+          ls kwrt-packages/luci-app-ssr-plus/
+
+      - name: Parse version from Makefile
+        id: setver
+        run: |
+          cd kwrt-packages/luci-app-ssr-plus
+
+          ver=$(grep -E '^PKG_VERSION:=' Makefile | cut -d= -f2 | tr -d ' ')
+          rel=$(grep -E '^PKG_RELEASE:=' Makefile | cut -d= -f2 | tr -d ' ')
+
+          fullver="${ver}-r${rel}"
+          echo "ssrp_version=$fullver" >> $GITHUB_OUTPUT
+
+      - name: Show version
+        run: echo "版本号是：${{ steps.setver.outputs.ssrp_version }}"
 
       - name: Create directories for x86_64 and a53 and set PACKAGE_VERSION
         run: |
@@ -198,7 +219,7 @@ jobs:
             mv -f a53/ makeself/
             echo "移动后再查看makeself/的文件"
             ls -lah makeself/
-            
+
       - name: Create self-extracting archives
         run: |
             echo "查看当前目录"
@@ -208,8 +229,8 @@ jobs:
             echo "查看进入后的 makeself files"
             ls 
             echo "准备打包..."
-            ./makeself.sh x86_64/ ssrp_x86_64_0513.run "by github action" ./install.sh
-            ./makeself.sh a53/ ssrp_aarch64_cortex-a53_0513.run "by github action" ./install.sh
+            ./makeself.sh x86_64/ ssrp_x86_64-${ssrp_version}.run "by github action" ./install.sh
+            ./makeself.sh a53/ ssrp_aarch64_cortex-a53-${ssrp_version}.run "by github action" ./install.sh
             
             
       
