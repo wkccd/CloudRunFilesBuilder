@@ -26,7 +26,8 @@ jobs:
       - name: Clone makeself repo
         run: |
           git clone https://github.com/megastep/makeself.git
-          tree
+          echo "查看makeself目录"
+          ls makeself
           echo "正在调试，这里故意终止"
           exit 1
 
