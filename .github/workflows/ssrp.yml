@@ -38,7 +38,7 @@ jobs:
           ver=$(grep -E '^PKG_VERSION:=' Makefile | cut -d= -f2 | tr -d ' ')
           rel=$(grep -E '^PKG_RELEASE:=' Makefile | cut -d= -f2 | tr -d ' ')
 
-          fullver="${ver}-r${rel}"
+          fullver="${ver}_r${rel}"
           echo "ssrp_version=$fullver" >> $GITHUB_ENV
     
 
