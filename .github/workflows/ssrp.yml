@@ -208,8 +208,8 @@ jobs:
             echo "查看进入后的 makeself files"
             ls 
             echo "准备打包..."
-            makeself.sh x86_64/ ssrp_x86_64_$appversion.run "by github action" ./install.sh
-            makeself.sh a53/ ssrp_aarch64_cortex-a53_$appversion.run "by github action" ./install.sh
+            ./makeself.sh x86_64/ ssrp_x86_64_0513.run "by github action" ./install.sh
+            ./makeself.sh a53/ ssrp_aarch64_cortex-a53_0513.run "by github action" ./install.sh
             
             
       
