@@ -23,13 +23,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Clone makeself repo
-        run: |
-          git clone https://github.com/megastep/makeself.git
-          echo "查看makeself目录"
-          ls makeself
-         
-
       - name: Create directories for x86_64 and a53 and set PACKAGE_VERSION
         run: |
           mkdir -p x86_64/depends a53/depends
@@ -193,10 +186,14 @@ jobs:
             echo -e "#!/bin/sh\n\nopkg update\nif [ \$? -ne 0 ]; then\n    echo \"update failed\"\n    exit 1\nfi\nopkg install depends/*.ipk --force-depends\nopkg install *.ipk --force-depends" > x86_64/install.sh
             chmod +x x86_64/install.sh
             cp x86_64/install.sh a53/
-  
+
+      - name: Clone makeself repo
+        run: |
+          git clone https://github.com/megastep/makeself.git
+          echo "查看makeself目录"
+          ls makeself
       - name: Change Dir
         run: |
-            tree
             mv -f x86_64/ makeself/
             mv -f a53/ makeself/
             ls -lah makeself/
@@ -205,11 +202,10 @@ jobs:
         run: |
             echo "查看当前目录"
             ls
-            echo "故意终止"
-            exit 1
+            echo "进入makeself目录"
             cd makeself
             echo "查看 makeself files"
-            ls makeself/
+            ls 
             ipk_file=$(ls x86_64/*.ipk)
             appversion=$(basename "$ipk_file" | grep -oP '\d+\.\d+\.\d+')
             echo "APP_VERSION=$appversion" >> $GITHUB_ENV
