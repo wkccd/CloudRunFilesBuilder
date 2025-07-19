@@ -31,7 +31,8 @@ for platform in "${!PLATFORMS[@]}"; do
 
     echo "🔍 正在从 $URL 查找 $keyword"
 
-    PACKAGE_LIST=$(curl -s "$URL" | grep -oE 'href="[^"]+\.ipk"' | cut -d'"' -f2)
+    #PACKAGE_LIST=$(curl -s "$URL" | grep -oE 'href="[^"]+\.ipk"' | cut -d'"' -f2)
+    PACKAGE_LIST=$(curl -s "$URL" | grep -oE '[^"]+\.ipk')
 
     if [ -z "$PACKAGE_LIST" ]; then
       echo "⚠️ 无法读取 $URL 的包列表"
