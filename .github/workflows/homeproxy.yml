@@ -47,6 +47,8 @@ jobs:
           fi
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "打印版本号"
+          echo $VERSION
 
           # 打包两个平台
           for PLATFORM in x86_64 aarch64_generic; do
@@ -57,6 +59,8 @@ jobs:
           RAW_VERSION="${{ steps.pack.outputs.version }}"
           CLEAN_VERSION="${RAW_VERSION%%~*}"
           echo "cleaned_version=$CLEAN_VERSION" >> "$GITHUB_OUTPUT"
+          echo "打印整理后的版本号"
+          echo $CLEAN_VERSION
 
 
       - name: 📤 上传 .run 文件到 release
