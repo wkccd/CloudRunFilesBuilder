@@ -56,11 +56,13 @@ jobs:
               "homeproxy ${PLATFORM} Installer v${VERSION}" ./install.sh
           done
 
-          RAW_VERSION="${{ steps.pack.outputs.version }}"
-          CLEAN_VERSION="${RAW_VERSION%%~*}"
-          echo "cleaned_version=$CLEAN_VERSION" >> "$GITHUB_OUTPUT"
-          echo "打印整理后的版本号"
-          echo $CLEAN_VERSION
+      - name: Set version name without special chars
+        id: clean_version
+        run: |
+            version="${{ steps.pack.outputs.version }}"
+            version=${version%%~*}
+            echo "VERSION_CLEAN=$version" >> $GITHUB_ENV
+            echo "cleaned_version=$version" >> $GITHUB_OUTPUT
 
 
       - name: 📤 上传 .run 文件到 release
