@@ -13,20 +13,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-      - name: 登录 GitHub CLI
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "使用 GITHUB_TOKEN 登录"
-          echo "${GH_TOKEN}" | gh auth login --with-token
-
       - name: 删除 2 天前的工作流运行记录
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           THRESHOLD="$(date -u -d '2 days ago' '+%Y-%m-%dT%H:%M:%SZ')"
           echo "删除早于 $THRESHOLD 的运行记录..."
-          
+
           while true; do
             RUN_IDS=$(gh run list -R "${GITHUB_REPOSITORY}" --limit 100 --json databaseId,createdAt \
               | jq -r --arg TH "$THRESHOLD" '.[] | select(.createdAt < $TH) | .databaseId')
