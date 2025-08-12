@@ -1,0 +1,43 @@
+name: Cleanup Old Workflow Runs
+
+on:
+  workflow_dispatch: # 手动触发
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 安装依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: 登录 GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "使用 GITHUB_TOKEN 登录"
+          echo "${GH_TOKEN}" | gh auth login --with-token
+
+      - name: 删除 2 天前的工作流运行记录
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          THRESHOLD="$(date -u -d '2 days ago' '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "删除早于 $THRESHOLD 的运行记录..."
+          
+          while true; do
+            RUN_IDS=$(gh run list -R "${GITHUB_REPOSITORY}" --limit 100 --json databaseId,createdAt \
+              | jq -r --arg TH "$THRESHOLD" '.[] | select(.createdAt < $TH) | .databaseId')
+            
+            if [ -z "$RUN_IDS" ]; then
+              echo "✅ 没有更多需要删除的记录"
+              break
+            fi
+
+            for ID in $RUN_IDS; do
+              echo "🗑 删除运行记录 ID: $ID"
+              gh run delete "$ID" -R "${GITHUB_REPOSITORY}" --confirm
+            done
+          done
