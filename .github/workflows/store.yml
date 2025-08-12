@@ -8,6 +8,8 @@
 name: Make iStore run file
 
 on:
+  schedule:
+    - cron: "0 22 * * *"  # 北京时间早上 6 点
   workflow_dispatch:
 
 jobs:
