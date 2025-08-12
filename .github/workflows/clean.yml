@@ -1,36 +1,53 @@
 name: Cleanup Old Workflow Runs
 
 on:
-  workflow_dispatch: # 手动触发
+  workflow_dispatch:
+    inputs:
+      keep_days:
+        description: "保留最近多少天（默认 2）"
+        required: false
+        default: "2"
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
-
+    permissions:
+      actions: write   # 允许删除 workflow runs
     steps:
-      - name: 安装依赖
+      - name: 安装 jq
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
 
-      - name: 删除 2 天前的工作流运行记录
+      - name: 删除指定天数前的已完成运行
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KEEP_DAYS: ${{ github.event.inputs.keep_days }}
         run: |
-          THRESHOLD="$(date -u -d '2 days ago' '+%Y-%m-%dT%H:%M:%SZ')"
-          echo "删除早于 $THRESHOLD 的运行记录..."
+          : "${KEEP_DAYS:=2}"
+          THRESHOLD="$(date -u -d "${KEEP_DAYS} days ago" '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "阈值时间(UTC)：$THRESHOLD"
 
-          while true; do
-            RUN_IDS=$(gh run list -R "${GITHUB_REPOSITORY}" --limit 100 --json databaseId,createdAt \
-              | jq -r --arg TH "$THRESHOLD" '.[] | select(.createdAt < $TH) | .databaseId')
-            
-            if [ -z "$RUN_IDS" ]; then
-              echo "✅ 没有更多需要删除的记录"
-              break
-            fi
+          # 拉取所有运行（分页），筛选：已完成 且 创建时间早于阈值，取出 ID
+          RUN_IDS=$(gh api -X GET "repos/${GITHUB_REPOSITORY}/actions/runs" \
+                    --paginate -F per_page=100 \
+                    --jq '.workflow_runs[]
+                          | select(.status=="completed" and .created_at < "'"$THRESHOLD"'")
+                          | .id')
 
-            for ID in $RUN_IDS; do
-              echo "🗑 删除运行记录 ID: $ID"
-              gh run delete "$ID" -R "${GITHUB_REPOSITORY}" -y
-            done
+          if [ -z "$RUN_IDS" ]; then
+            echo "✅ 没有可删除的运行"
+            exit 0
+          fi
+
+          echo "待删除运行数量：$(wc -w <<< "$RUN_IDS")"
+          for ID in $RUN_IDS; do
+            echo "🗑 正在删除运行 ID: $ID"
+            # 直接调用 REST API 删除，避免交互确认/参数不兼容
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/actions/runs/${ID}" || {
+              echo "⚠️ 删除失败：$ID（将继续处理其他项）"
+            }
+            sleep 0.2
           done
+
+          echo "🎉 清理完成"
