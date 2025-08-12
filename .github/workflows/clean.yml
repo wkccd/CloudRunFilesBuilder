@@ -31,6 +31,6 @@ jobs:
 
             for ID in $RUN_IDS; do
               echo "🗑 删除运行记录 ID: $ID"
-              gh run delete "$ID" -R "${GITHUB_REPOSITORY}" --confirm
+              gh run delete "$ID" -R "${GITHUB_REPOSITORY}" -y
             done
           done
