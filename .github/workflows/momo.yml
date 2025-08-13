@@ -1,0 +1,136 @@
+#=================================================
+# https://github.com/wukongdaily/RunFilesBuilder
+# Description: Build RunFiles using GitHub Actions
+# Lisence: MIT
+# Author: wukongdaily
+# Blog: wkdaily.cpolar.cn
+#=================================================
+
+name: Make momo run files
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Fetch latest release tag from momo
+        id: fetch_latest_tag
+        run: |
+          latest_tag=$(curl -s https://api.github.com/repos/momomomo-org/OpenWrt-momo/releases/latest | jq -r '.tag_name')
+          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
+          
+      - name: Clone makeself repository
+        run: git clone https://github.com/megastep/makeself.git
+
+      - name: Download latest momo files
+        run: |
+          curl -LO $(curl -s https://api.github.com/repos/momomomo-org/OpenWrt-momo/releases/latest | grep -oP '"browser_download_url":\s*".*momo_aarch64_cortex-a53-openwrt-24.10.tar.gz"' | cut -d '"' -f 4)
+          curl -LO $(curl -s https://api.github.com/repos/momomomo-org/OpenWrt-momo/releases/latest | grep -oP '"browser_download_url":\s*".*momo_x86_64-openwrt-24.10.tar.gz"' | cut -d '"' -f 4)
+          tar --one-top-level=momo_aarch64_cortex-a53-openwrt-24.10 -xvzf momo_aarch64_cortex-a53-openwrt-24.10.tar.gz
+          tar --one-top-level=momo_x86_64-openwrt-24.10 -xvzf momo_x86_64-openwrt-24.10.tar.gz
+
+      - name: Organize files for aarch64_cortex-a53&x86_64
+        run: |
+          mkdir momo_x86_64 momo_aarch64_cortex-a53
+          cp momo_x86_64-openwrt-24.10/*.ipk momo_x86_64/
+          cp momo_aarch64_cortex-a53-openwrt-24.10/*.ipk momo_aarch64_cortex-a53/
+          # 保存当前路径并进入目标目录
+          pushd "momo_x86_64" >/dev/null || exit 1
+          for file in *~*.ipk; do
+          [ -e "$file" ] || continue
+          # 构造新文件名，去除 ~ 字符
+          new_file="$(echo "$file" | tr -d '~')"
+          # 如果目标文件名已存在，则提示并跳过
+          if [ -e "$new_file" ]; then
+          echo "目标文件已存在，跳过: $new_file"
+          continue
+          fi
+          # 重命名文件
+          mv "$file" "$new_file"
+          echo "已重命名: $file -> $new_file"
+          done
+          popd >/dev/null
+
+          pushd "momo_aarch64_cortex-a53" >/dev/null || exit 1
+          for file in *~*.ipk; do
+          [ -e "$file" ] || continue
+          # 构造新文件名，去除 ~ 字符
+          new_file="$(echo "$file" | tr -d '~')"
+          # 如果目标文件名已存在，则提示并跳过
+          if [ -e "$new_file" ]; then
+          echo "目标文件已存在，跳过: $new_file"
+          continue
+          fi
+          # 重命名文件
+          mv "$file" "$new_file"
+          echo "已重命名: $file -> $new_file"
+          done
+          popd >/dev/null
+          
+
+      - name: Create install.sh scripts
+        run: |
+          cat <<EOF > momo_x86_64/install.sh
+          #!/bin/sh
+          opkg update
+          if [ $? -ne 0 ]; then
+              echo "update failed。"
+              exit 1
+          fi
+          opkg install *.ipk
+          EOF
+          chmod +x momo_x86_64/install.sh
+          cp momo_x86_64/install.sh momo_aarch64_cortex-a53/install.sh
+          
+
+      - name: Move momo directories to makeself
+        run: |
+          mv momo_x86_64 makeself/
+          mv momo_aarch64_cortex-a53 makeself/
+
+      - name: Create self-extracting packages
+        run: |
+          cd makeself
+          ./makeself.sh momo_x86_64/ momo_${{ env.LATEST_TAG }}_x86_64.run "by github action" ./install.sh
+          ./makeself.sh momo_aarch64_cortex-a53/ momo_${{ env.LATEST_TAG }}_aarch64_cortex-a53.run "by github action" ./install.sh
+          
+
+      - name: Check file sizes
+        run: |
+          ls -lh makeself/momo_*.run
+
+      - name: Fetch latest release details
+        id: fetch_release_details
+        run: |
+          extra_content="![Github](https://img.shields.io/badge/momo.run-123456?logo=github&logoColor=fff&labelColor=#5cb85c&style=for-the-badge) [![Github](https://img.shields.io/badge/国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.cn/archives/1) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/wukongdaily/RunFilesBuilder/${{ env.LATEST_TAG }}/total?style=for-the-badge&labelColor=black&color=%2325c2a0)"
+          sed -i "1i$extra_content" "${{ github.workspace }}/info.md"
+
+      - name: Print release notes
+        run: |
+          cat ${{ github.workspace }}/info.md
+
+      - name: Generate new tag & release
+        uses: softprops/action-gh-release@v2.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.LATEST_TAG }}
+          target_commitish: ${{ github.ref_name }}
+          prerelease: false
+          body_path: ${{ github.workspace }}/info.md
+
+      - name: Upload run files as release assets
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: ${{ env.LATEST_TAG }}
+          name: "momo-${{ env.LATEST_TAG }}"
+          files: makeself/momo_*.run
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
