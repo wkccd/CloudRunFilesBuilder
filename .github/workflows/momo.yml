@@ -22,7 +22,7 @@ jobs:
       - name: Fetch latest release tag from momo
         id: fetch_latest_tag
         run: |
-          latest_tag=$(curl -s https://api.github.com/repos/momomomo-org/OpenWrt-momo/releases/latest | jq -r '.tag_name')
+          latest_tag=$(curl -s https://api.github.com/repos/nikkinikki-org/OpenWrt-momo/releases/latest | jq -r '.tag_name')
           echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
           
       - name: Clone makeself repository
