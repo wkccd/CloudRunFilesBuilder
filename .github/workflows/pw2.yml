@@ -30,15 +30,35 @@ jobs:
       - name: Clone makeself repository
         run: git clone https://github.com/megastep/makeself.git
 
-      - name: Download latest Passwall files
+      - name: Download latest Passwall2 files
         run: |
           mkdir -p downloads
           cd downloads
-          curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall2/releases/latest | grep -oP '"browser_download_url":\s*".*passwall_packages_ipk_x86_64.zip"' | cut -d '"' -f 4)
-          curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall2/releases/latest | grep -oP '"browser_download_url":\s*".*passwall_packages_ipk_aarch64_cortex-a53.zip"' | cut -d '"' -f 4)
-          curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall2/releases/latest | grep -oP '"browser_download_url":\s*".*luci-24.10.*\.ipk"' | head -1 | cut -d '"' -f 4)
-          curl -LO $(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall2/releases/latest | grep -oP '"browser_download_url":\s*".*luci-24.10.*\.ipk"' | tail -1 | cut -d '"' -f 4)
-      
+
+          # 下载 x86_64 ipk
+          curl -L -O $(
+            curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall2/releases/latest \
+            | jq -r '.assets[] | select(.name | test("passwall_packages_ipk_x86_64\\.zip")) | .browser_download_url'
+          )
+
+          # 下载 aarch64 ipk
+          curl -L -O $(
+            curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall2/releases/latest \
+            | jq -r '.assets[] | select(.name | test("passwall_packages_ipk_aarch64_cortex-a53\\.zip")) | .browser_download_url'
+          )
+
+          # 下载第一个 luci-24.10 ipk
+          curl -L -O $(
+            curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall2/releases/latest \
+            | jq -r '.assets[] | select(.name | test("luci-24\\.10.*\\.ipk")) | .browser_download_url' | head -1
+          )
+
+          # 下载第二个 luci-24.10 ipk
+          curl -L -O $(
+            curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall2/releases/latest \
+            | jq -r '.assets[] | select(.name | test("luci-24\\.10.*\\.ipk")) | .browser_download_url' | tail -1
+          )
+
       - name: Organize files for x86_64
         run: |
           mkdir -p passwall_x86_64/depends passwall_x86_64/main
