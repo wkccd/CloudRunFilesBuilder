@@ -108,22 +108,20 @@ jobs:
       - name: Print release notes
         run: |
           cat ${{ github.workspace }}/info.md
-      - name: Generate new tag & release
-        uses: softprops/action-gh-release@v2.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.LATEST_TAG }}
-          target_commitish: ${{ github.ref_name }}
-          prerelease: false
-          body_path: ${{ github.workspace }}/momo.md
 
+      - name: Set tag name
+        id: vars
+        run: |
+          TODAY=$(date -u -d '+8 hour' +'%Y-%m-%d')
+          echo "tag_name=$TODAY" >> $GITHUB_ENV
+          
       - name: Upload run files as release assets
         uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: ${{ env.LATEST_TAG }}
-          name: "momo-${{ env.LATEST_TAG }}"
-          files: makeself/momo_*.run
+          tag_name: ${{ env.tag_name }}
+          name: "Daily Build - ${{ env.tag_name }}"
+          files: makeself/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
+          body: "[![Github](https://img.shields.io/badge/可套用国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.cn/archives/1)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
