@@ -16,13 +16,9 @@ jobs:
   cleanup_releases:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # 必须有权限删除 release
+      contents: write   
 
     steps:
-      - name: 安装 jq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
 
       - name: 删除指定天数前的 Release
         env:
