@@ -16,11 +16,10 @@ jobs:
   cleanup_releases:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   
+      contents: write
 
     steps:
-
-      - name: 删除指定天数前的 Release
+      - name: 清理指定天数前的 Release 和 Tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KEEP_DAYS: ${{ github.event.inputs.keep_days }}
@@ -29,6 +28,7 @@ jobs:
           THRESHOLD="$(date -u -d "${KEEP_DAYS} days ago" '+%Y-%m-%dT%H:%M:%SZ')"
           echo "阈值时间(UTC)：$THRESHOLD"
 
+          # 获取需要删除的 release ID
           RELEASE_IDS=$(gh api -X GET "repos/${GITHUB_REPOSITORY}/releases" \
                         --paginate -F per_page=100 \
                         --jq '.[] | select(.created_at < "'"$THRESHOLD"'") | .id')
@@ -39,13 +39,28 @@ jobs:
           fi
 
           echo "待删除 Release 数量：$(wc -w <<< "$RELEASE_IDS")"
+
           for ID in $RELEASE_IDS; do
+            # 获取 release 名称和 tag
             NAME=$(gh api -X GET "repos/${GITHUB_REPOSITORY}/releases/${ID}" --jq '.name')
+            TAG_NAME=$(gh api -X GET "repos/${GITHUB_REPOSITORY}/releases/${ID}" --jq -r '.tag_name')
+
             echo "🗑 删除 Release: $NAME (ID: $ID)"
             gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${ID}" || {
-              echo "⚠️ 删除失败：$ID（继续删除下一个）"
+              echo "⚠️ 删除 Release 失败：$ID（继续删除下一个）"
             }
+
+            # 删除对应 tag
+            if [ "$TAG_NAME" != "null" ] && [ -n "$TAG_NAME" ]; then
+              echo "🗑 删除 Tag: $TAG_NAME"
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/$TAG_NAME" || {
+                echo "⚠️ 删除 Tag 失败：$TAG_NAME（继续下一个）"
+              }
+            else
+              echo "⚠️ Release $NAME 没有关联 Tag，跳过删除 Tag"
+            fi
+
             sleep 0.5
           done
 
-          echo "🎉 Release 清理完成"
+          echo "🎉 Release + Tag 清理完成"
