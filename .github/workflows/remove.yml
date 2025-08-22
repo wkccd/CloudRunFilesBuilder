@@ -1,39 +1,35 @@
-name: Delete All Releases and Tags
+name: Delete All Tags
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:   # 手动触发
+
 jobs:
-  delete:
+  delete-tags:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete all releases and tags
+      - name: Delete all tags
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Fetching releases from ${{ github.repository }}"
+          echo "Fetching tags from ${{ github.repository }}"
 
-          releases=$(curl -s -H "Authorization: token $GH_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/releases \
-            | jq -r '.[] | [.id, .tag_name] | @tsv')
+          tags=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            https://api.github.com/repos/${{ github.repository }}/git/refs/tags \
+            | jq -r '.[].ref')
 
-          if [ -z "$releases" ]; then
-            echo "⚠️ No releases found."
+          if [ -z "$tags" ]; then
+            echo "⚠️ No tags found."
             exit 0
           fi
 
-          while IFS=$'\t' read -r id tag; do
-            echo "Deleting release ID=$id  TAG=$tag"
+          for ref in $tags; do
+            tag=${ref#refs/tags/}
+            echo "Deleting tag: $tag"
 
-            # 删除 release
-            curl -s -X DELETE -H "Authorization: token $GH_TOKEN" \
-              https://api.github.com/repos/${{ github.repository }}/releases/$id
-
-            # 删除 tag （注意 URL 编码）
             tag_encoded=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$tag")
 
             curl -s -X DELETE -H "Authorization: token $GH_TOKEN" \
               https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$tag_encoded
+          done
 
-          done <<< "$releases"
-
-          echo "✅ All releases and tags deleted."
+          echo "✅ All tags deleted."
