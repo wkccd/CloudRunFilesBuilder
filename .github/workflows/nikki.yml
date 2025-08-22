@@ -6,7 +6,7 @@
 # Blog: wkdaily.cpolar.cn
 #=================================================
 
-name: Make nikki run files for 23.05
+name: Make nikki run files
 
 on:
   schedule:
