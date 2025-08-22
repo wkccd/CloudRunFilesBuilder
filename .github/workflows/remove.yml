@@ -1,8 +1,7 @@
 name: Delete All Releases and Tags
 
 on:
-  workflow_dispatch:   # 手动触发
-
+  workflow_dispatch:  
 jobs:
   delete:
     runs-on: ubuntu-latest
@@ -23,15 +22,18 @@ jobs:
           fi
 
           while IFS=$'\t' read -r id tag; do
-            echo "Deleting release ID=$id TAG=$tag"
+            echo "Deleting release ID=$id  TAG=$tag"
 
             # 删除 release
             curl -s -X DELETE -H "Authorization: token $GH_TOKEN" \
               https://api.github.com/repos/${{ github.repository }}/releases/$id
 
-            # 删除远程 tag
+            # 删除 tag （注意 URL 编码）
+            tag_encoded=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$tag")
+
             curl -s -X DELETE -H "Authorization: token $GH_TOKEN" \
-              https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$tag
+              https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$tag_encoded
+
           done <<< "$releases"
 
           echo "✅ All releases and tags deleted."
