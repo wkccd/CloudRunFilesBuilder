@@ -66,13 +66,19 @@ jobs:
             echo "cleaned_version=$version" >> $GITHUB_OUTPUT
 
 
-      - name: 📤 上传 .run 文件到 release
+      - name: Set tag name
+        id: vars
+        run: |
+          TODAY=$(date -u -d '+8 hour' +'%Y-%m-%d')
+          echo "tag_name=$TODAY" >> $GITHUB_ENV
+          
+      - name: Upload run files as release assets
         uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: "dae-${{ steps.clean_version.outputs.cleaned_version }}"
-          name: "dae-${{ steps.clean_version.outputs.cleaned_version }}"
-          body_path: ${{ github.workspace }}/info/dae.md
+          tag_name: ${{ env.tag_name }}
+          name: "Daily Build - ${{ env.tag_name }}"
           files: output/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
+          body: "[![Github](https://img.shields.io/badge/可套用国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.cn/archives/1)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
