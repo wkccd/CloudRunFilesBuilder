@@ -96,12 +96,18 @@ jobs:
           cd makeself
           ./makeself.sh openclash-x86/ openclash-x86-64-${{ env.version }}.run "by github action" ./install.sh
           ./makeself.sh openclash-a53/ openclash-aarch64_cortex-a53-${{ env.version }}.run "by github action" ./install.sh
+      
+      - name: Set tag name
+        id: vars
+        run: |
+          TODAY=$(date -u -d '+8 hour' +'%Y-%m-%d')
+          echo "tag_name=daily-$TODAY" >> $GITHUB_ENV
 
       - name: Upload run files as release assets
         uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: "daily-$(date -u -d '+8 hour' +'%Y-%m-%d')"
-          name: "Daily Build"
+          tag_name: ${{ env.tag_name }}
+          name: "Daily Build - ${{ env.tag_name }}"
           files: makeself/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
           body: "[![Github](https://img.shields.io/badge/国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.cn/archives/1) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/wukongdaily/RunFilesBuilder/${{ env.version }}/total?style=for-the-badge&labelColor=black&color=%2325c2a0)"
