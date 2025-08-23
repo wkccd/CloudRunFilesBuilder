@@ -10,7 +10,7 @@ name: Make OpenClash run files
 
 on:
   schedule:
-    - cron: "0 22 * * *"  # 北京时间早上 6 点
+    - cron: "5 22 * * *"  # 北京时间早上 6 点 05
   workflow_dispatch:
 
 jobs:
@@ -110,6 +110,12 @@ jobs:
           name: "Daily Build - ${{ env.tag_name }}"
           files: makeself/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: "[![Github](https://img.shields.io/badge/可套用国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.cn/archives/1)"
+          body: |
+             <p align="left">
+              <img src="https://img.shields.io/github/downloads/wkccd/CloudRunFilesBuilder/${{ env.tag_name }}/total?style=for-the-badge&label=今日下载次数&labelColor=427e25&color=black"/>
+              <a href="https://wkdaily.cpolar.cn/archives/1">
+                <img src="https://img.shields.io/badge/可套用国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge"/>
+              </a>
+             </p>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
