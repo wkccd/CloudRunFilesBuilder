@@ -2,7 +2,7 @@ name: Cleanup Old Releases
 
 on:
   schedule:
-    # 每周一凌晨 1 点（UTC），北京时间周一早上 9 点
+    # 每周一 01:00 UTC（北京时间周一 09:00）
     - cron: "0 1 * * 1"
 
   workflow_dispatch:
@@ -24,47 +24,49 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KEEP_DAYS: ${{ github.event.inputs.keep_days }}
         run: |
-          # 如果 KEEP_DAYS 为空，则默认 
-          if [ -z "$KEEP_DAYS" ]; then
-            KEEP_DAYS=
+          set -euo pipefail
+          export LANG=C.UTF-8
+          export LC_ALL=C.UTF-8
+
+          # 默认值与校验（定时触发时 inputs 为空，这里兜底）
+          KEEP_DAYS="${KEEP_DAYS:-2}"
+          if ! [[ "$KEEP_DAYS" =~ ^[0-9]+$ ]]; then
+            echo "KEEP_DAYS is not a number, fallback to 2"
+            KEEP_DAYS=2
           fi
 
           THRESHOLD="$(date -u -d "${KEEP_DAYS} days ago" '+%Y-%m-%dT%H:%M:%SZ')"
           echo "Threshold time (UTC): $THRESHOLD"
 
-          # 获取需要删除的 release ID
-          RELEASE_IDS=$(gh api -X GET "repos/${GITHUB_REPOSITORY}/releases" \
-                        --paginate -F per_page=100 \
-                        --jq '.[] | select(.created_at < "'"$THRESHOLD"'") | .id')
+          # 一次性拉取所有超出阈值的 release 所需字段（id、name、tag_name）
+          TO_DELETE="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/releases" \
+            --jq '.[] | select(.created_at < "'"$THRESHOLD"'") | [.id, (.name // ""), (.tag_name // "")] | @tsv' || true)"
 
-          if [ -z "$RELEASE_IDS" ]; then
+          if [ -z "$TO_DELETE" ]; then
             echo "✅ No releases to delete"
             exit 0
           fi
 
-          echo "Releases to delete: $(echo "$RELEASE_IDS" | wc -w)"
+          COUNT="$(printf '%s\n' "$TO_DELETE" | sed '/^$/d' | wc -l)"
+          echo "Releases to delete: $COUNT"
 
-          for ID in $RELEASE_IDS; do
-            # 获取 release 名称和 tag
-            NAME=$(gh api -X GET "repos/${GITHUB_REPOSITORY}/releases/${ID}" --jq '.name')
-            TAG_NAME=$(gh api -X GET "repos/${GITHUB_REPOSITORY}/releases/${ID}" --jq -r '.tag_name')
-
-            echo "🗑 Deleting Release: $NAME (ID: $ID)"
+          # 逐行读入：ID \t NAME \t TAG_NAME
+          printf '%s\n' "$TO_DELETE" | while IFS=$'\t' read -r ID NAME TAG_NAME; do
+            echo "🗑 Deleting Release: ${NAME:-<no name>} (ID: $ID)"
             gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${ID}" || {
-              echo "⚠️ Failed to delete Release: $ID (continue)"
+              echo "⚠️ Failed to delete Release: $ID (continue)"; 
             }
 
-            # 删除对应 tag
-            if [ "$TAG_NAME" != "null" ] && [ -n "$TAG_NAME" ]; then
+            if [ -n "${TAG_NAME:-}" ] && [ "$TAG_NAME" != "null" ]; then
               echo "🗑 Deleting Tag: $TAG_NAME"
               gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/$TAG_NAME" || {
-                echo "⚠️ Failed to delete Tag: $TAG_NAME (continue)"
+                echo "⚠️ Failed to delete Tag: $TAG_NAME (continue)";
               }
             else
-              echo "⚠️ Release $NAME has no tag, skipping tag deletion"
+              echo "⚠️ No tag for release ID $ID, skipping tag deletion"
             fi
 
-            sleep 0.5
+            sleep 1
           done
 
           echo "🎉 Cleanup complete"
