@@ -42,7 +42,7 @@ jobs:
             exit 0
           fi
 
-          echo "Releases to delete: $(wc -w <<< "$RELEASE_IDS")"
+          echo "Releases to delete: $(echo "$RELEASE_IDS" | wc -w)"
 
           for ID in $RELEASE_IDS; do
             # 获取 release 名称和 tag
