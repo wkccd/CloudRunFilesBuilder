@@ -1,0 +1,47 @@
+```yaml
+name: 🚀 Trigger All Workflows
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  trigger-all:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger All Workflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          echo "Starting to trigger all workflows..."
+
+          gh api --paginate \
+            "repos/$REPO/actions/workflows" \
+            --jq '.workflows[] |
+              select(.state == "active") |
+              [.id, .path] | @tsv' |
+          while IFS="$(printf '\t')" read -r id path; do
+            # Skip this workflow to avoid triggering itself
+            if [ "$path" = ".github/workflows/run-all.yml" ]; then
+              continue
+            fi
+
+            echo "Triggering: $path"
+
+            if gh api \
+              --method POST \
+              "repos/$REPO/actions/workflows/$id/dispatches" \
+              -f ref="$DEFAULT_BRANCH"; then
+              echo "Dispatch request submitted: $path"
+            else
+              echo "Failed to trigger: $path"
+            fi
+          done
+
+          echo "Finished processing all workflow dispatch requests."
+```
