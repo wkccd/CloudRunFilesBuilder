@@ -10,8 +10,6 @@
 name: Build 25.12 sing-box core
 
 on:
-  schedule:
-    - cron: "4 22 * * *"  # 北京时间早上 6 点 04
   workflow_dispatch:
 
 jobs:

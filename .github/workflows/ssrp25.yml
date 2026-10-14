@@ -4,8 +4,6 @@ permissions:
   contents: write
 
 on:
-  schedule:
-    - cron: "20 22 * * *"  # 北京时间早上 6 点 20
   workflow_dispatch:
 
 jobs:

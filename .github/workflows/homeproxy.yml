@@ -8,8 +8,6 @@
 name: Build 24.10 HomeProxy
 
 on:
-  schedule:
-    - cron: "0 22 * * *"  # 北京时间早上 6 点
   workflow_dispatch:
 
 jobs:

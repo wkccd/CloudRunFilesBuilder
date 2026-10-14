@@ -9,8 +9,6 @@
 name: Build 25.12 MosDNS
 
 on:
-  schedule:
-    - cron: "12 22 * * *"  # 北京时间早上 6 点12
   workflow_dispatch:
 
 jobs:

@@ -10,8 +10,6 @@
 name: Make 24.10 openwrt-daede
 
 on:
-  schedule:
-    - cron: "5 22 * * *"  # 北京时间早上 6 点 05
   workflow_dispatch:
 
 jobs:

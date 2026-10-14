@@ -10,8 +10,6 @@
 name: Build 25.12 openwrt-daede
 
 on:
-  schedule:
-    - cron: "6 22 * * *"  # 北京时间早上 6 点 06
   workflow_dispatch:
 
 jobs:

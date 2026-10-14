@@ -9,8 +9,6 @@
 name: Build 25.12 OpenClash
 
 on:
-  schedule:
-    - cron: "10 22 * * *"  # 北京时间早上 6 点 08
   workflow_dispatch:
 
 jobs:

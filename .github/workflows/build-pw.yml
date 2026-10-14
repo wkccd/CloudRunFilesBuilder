@@ -1,8 +1,6 @@
 name: Build 25.12 PassWall
 
 on:
-  schedule:
-    - cron: "8 22 * * *"  # 北京时间早上 6 点 08
   workflow_dispatch:
 
 jobs:

@@ -9,8 +9,6 @@
 name: Build 24.10 AdGuardHome
 
 on:
-  schedule:
-    - cron: "0 22 * * *"  # 北京时间早上 6 点
   workflow_dispatch:
       inputs:
         package_version:

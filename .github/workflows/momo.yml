@@ -9,8 +9,6 @@
 name: Build 24.10 momo
 
 on:
-  schedule:
-    - cron: "2 22 * * *"  # 北京时间早上 6 点02
   workflow_dispatch:
 
 jobs:

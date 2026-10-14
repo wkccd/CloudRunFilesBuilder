@@ -9,8 +9,6 @@
 name: Build 24.10 Passwall
 
 on:
-  schedule:
-    - cron: "3 22 * * *"  # 北京时间早上 6 点 03
   workflow_dispatch:
 
 jobs:
