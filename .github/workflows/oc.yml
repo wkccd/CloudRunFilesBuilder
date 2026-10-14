@@ -10,7 +10,7 @@ name: Build 24.10 OpenClash
 
 on:
   schedule:
-    - cron: "8 22 * * *"  # 北京时间早上 6 点 08
+    - cron: '40 2 * * *'
   workflow_dispatch:
 
 jobs:
