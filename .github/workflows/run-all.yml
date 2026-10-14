@@ -1,4 +1,3 @@
-```yaml
 name: 🚀 Trigger All Workflows
 
 on:
@@ -44,4 +43,3 @@ jobs:
           done
 
           echo "Finished processing all workflow dispatch requests."
-```
