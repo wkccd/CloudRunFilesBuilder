@@ -41,17 +41,17 @@ jobs:
           # 下载 x86_64 apk
           curl -L --fail --retry 5 --retry-delay 3 \
             -o passwall_packages_apk_x86_64.zip \
-            "https://github.com/Openwrt-Passwall/openwrt-passwall2/releases/download/${latest_tag}/passwall_packages_apk_x86_64.zip"
+            "https://github.com/Openwrt-Passwall/openwrt-passwall2/releases/download/${latest_tag}/packages_apk_x86_64.zip"
 
           # 下载 aarch64 a53 apk
           curl -L --fail --retry 5 --retry-delay 3 \
             -o passwall_packages_apk_aarch64_cortex-a53.zip \
-            "https://github.com/Openwrt-Passwall/openwrt-passwall2/releases/download/${latest_tag}/passwall_packages_apk_aarch64_cortex-a53.zip"
+            "https://github.com/Openwrt-Passwall/openwrt-passwall2/releases/download/${latest_tag}/packages_apk_aarch64_cortex-a53.zip"
 
           # 下载 aarch64_generic apk
           curl -L --fail --retry 5 --retry-delay 3 \
             -o passwall_packages_apk_aarch64_generic.zip \
-            "https://github.com/Openwrt-Passwall/openwrt-passwall2/releases/download/${latest_tag}/passwall_packages_apk_aarch64_generic.zip"
+            "https://github.com/Openwrt-Passwall/openwrt-passwall2/releases/download/${latest_tag}/packages_apk_aarch64_generic.zip"
 
           # 下载 luci app apk
           luci_url=$(curl -s https://api.github.com/repos/Openwrt-Passwall/openwrt-passwall2/releases/latest \
