@@ -11,8 +11,8 @@
 ![Github](https://img.shields.io/badge/ARGON主题.run-123456?logo=github&logoColor=fff&labelColor=1E90FF&style=for-the-badge) 
 ![Github](https://img.shields.io/badge/DUFS文件服务器.run-123456?logo=github&logoColor=fff&labelColor=00ae9d&style=for-the-badge)
 # RunFilesBuilder 
-- 24.10.x ✅
-- 25.12.x ❌
+- 24.10.x ✅ 不带25开头的 是给24、23、22、21 系统用的
+- 25.12.x ✅ 25- 开头的是给25.12 系统用的
 
 
 【[ENGLISH](https://github.com/wukongdaily/RunFilesBuilder/blob/master/README_en.md)】
